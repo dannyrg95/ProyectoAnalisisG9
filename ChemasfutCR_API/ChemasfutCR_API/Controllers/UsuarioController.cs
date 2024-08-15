@@ -11,9 +11,7 @@ namespace ChemasfutCR_API.Controllers
         [Route("ConsultarUsuarios")]
         public IActionResult ConsultarUsuarios()
         {
-            var resultado = 750000;
-
-            return Ok(resultado);
+            return Ok("Todo bien");
         }
 
     }
