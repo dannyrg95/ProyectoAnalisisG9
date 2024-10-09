@@ -6,4 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="wwwroot\page\img\NewFolder\**" />
+    <Content Remove="wwwroot\page\img\NewFolder\**" />
+    <EmbeddedResource Remove="wwwroot\page\img\NewFolder\**" />
+    <None Remove="wwwroot\page\img\NewFolder\**" />
+  </ItemGroup>
+
 </Project>
