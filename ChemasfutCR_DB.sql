@@ -65,22 +65,27 @@ CREATE PROCEDURE RegistrarUsuario
 	@Fecha_Nacimiento	date,
 	@Teléfono			varchar(20),
 	@Email				varchar(100),
-	@Contraseña			varchar(100)
+	@Contraseña			varchar(100),
+	@Identificacion		varchar(50)
 AS
 BEGIN
 
 	DECLARE @Rol	TINYINT = 1,
 			@Estado	BIT		= 1
 
-	IF NOT EXISTS(SELECT 1 FROM dbo.Usuario WHERE Email = @Email)
+	IF NOT EXISTS(SELECT 1 FROM dbo.Usuario WHERE Email = @Email OR Identificacion = @Identificacion)
 	BEGIN
 
-		INSERT INTO dbo.Usuario(Nombre,Apellido,Fecha_Nacimiento,Teléfono,Email,Contraseña,ID_Rol,Estado)
-		VALUES (@Nombre,@Apellido,@Fecha_Nacimiento,@Teléfono,@Email,@Contraseña,@Rol,@Estado)
+		INSERT INTO dbo.Usuario(Nombre,Apellido,Fecha_Nacimiento,Teléfono,Email,Contraseña,Identificacion,ID_Rol,Estado)
+		VALUES (@Nombre,@Apellido,@Fecha_Nacimiento,@Teléfono,@Email,@Contraseña,@Identificacion,@Rol,@Estado)
 
 	END
 
 END;
+
+/**EXEC RegistrarUsuario 'Danny', 'Rojas', '1995-08-27', '60015555', 'crojas1@chemasfutcr.com', '$Prueba1234*', '116160205'
+Error Msg 547, Level 16, State 0, Procedure RegistrarUsuario, Line 18 [Batch Start Line 85]
+The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Usuario_Rol". The conflict occurred in database "ChemasfutCR", table "dbo.Rol", column 'ID_Rol'. **//
 
 /** ACTUALIZAR USUARIO **/
 CREATE PROCEDURE ActualizarUsuario
@@ -192,4 +197,8 @@ BEGIN
     WHERE 
         ID_Usuario = @ID_Usuario;
 END;
+
+/** UK tabla usuario campo correo **/
+ALTER TABLE Usuario
+ADD CONSTRAINT UK_Usuario UNIQUE (Email);
 
