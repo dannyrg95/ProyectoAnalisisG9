@@ -10,14 +10,14 @@ CREATE TABLE Usuario (
 	Telefono VARCHAR(20) NOT NULL,
 	Email VARCHAR(255) NOT NULL,
 	Password VARCHAR(100) NOT NULL,
-	ID_Rol INT,
+	ID_Rol INT NOT NULL,
 	Estado BIT NOT NULL,
     FOREIGN KEY (ID_Rol) REFERENCES Rol(ID_Rol)
 );
 
 CREATE TABLE Rol (
     ID_Rol INT IDENTITY(1,1) PRIMARY KEY,
-    Descripcion VARCHAR(10)
+    Descripcion VARCHAR(10) NOT NULL
 );
 
 /** CATEGORIA **/
@@ -37,14 +37,15 @@ CREATE TABLE Productos(
 	Stock INT DEFAULT 0,
 	Talla VARCHAR(20),
 	Color VARCHAR(20),
+    Estado BIT NOT NULL,
 	FOREIGN KEY (ID_Categoria) REFERENCES Categoria(ID_Categoria)
 );
 
 /** PEDIDOS **/
 CREATE TABLE Pedidos (
 	ID_Pedido INT IDENTITY(1,1) PRIMARY KEY,
-	ID_Usuario INT,
-    ID_Producto INT,
+	ID_Usuario INT NOT NULL,
+    ID_Producto INT NOT NULL,
 	Fecha_Pedido DATE NOT NULL,
     Cantidad INT NOT NULL,
     Monto_Total DECIMAL(10,2) NOT NULL,
@@ -58,10 +59,9 @@ CREATE TABLE Pedidos (
 
 /** REGISTRAR USUARIO **/
 CREATE PROCEDURE RegistrarUsuario
-    @ID_Usuario         INT,
 	@Nombre				VARCHAR(100),
 	@Apellido			VARCHAR(100),
-	@Identificacion		VARCHAR(50),
+	@Identificacion		INT,
     @Fecha_Nacimiento	DATE,
 	@Telefono			VARCHAR(20),
 	@Email				VARCHAR(100),
@@ -75,7 +75,7 @@ BEGIN
 	IF NOT EXISTS(SELECT 1 FROM dbo.Usuario WHERE Email = @Email)
 	BEGIN
 
-		INSERT INTO dbo.Usuario(ID_Usuario,Nombre,Apellido,Identificacion,Fecha_Nacimiento,Telefono,Email,Password,ID_Rol,Estado)
+		INSERT INTO dbo.Usuario(Nombre,Apellido,Identificacion,Fecha_Nacimiento,Telefono,Email,Password,ID_Rol,Estado)
 		VALUES (@Nombre,@Apellido,@Identificacion,@Fecha_Nacimiento,@Telefono,@Email,@Password,@ID_Rol,@Estado)
 
 	END
@@ -99,14 +99,15 @@ CREATE PROCEDURE ActualizarUsuario
 AS
 BEGIN
     UPDATE Usuario
-    SET Nombre = @Nombre,
+    SET 
+        Nombre = @Nombre,
         Apellido = @Apellido,
         Identificacion = @Identificacion,
         Fecha_Nacimiento = @Fecha_Nacimiento,
         Telefono = @Telefono,
         Email = @Email,
-        Password = @Password,
-    WHERE ID_Usuario = @ID_Usuario;
+        Password = @Password
+    WHERE ID_Usuario = @ID_Usuario
 END;
 
 /** INACTIVAR USUARIO **/
@@ -118,6 +119,50 @@ BEGIN
     SET Estado = 0
     WHERE ID_Usuario = @ID_Usuario;
 END;
+
+/** OBTENER TODOS LOS USUARIOS **/
+CREATE PROCEDURE ObtenerTodosLosUsuarios
+AS
+BEGIN
+    SELECT 
+        ID_Usuario,
+        Nombre,
+        Apellido,
+        Identificacion,
+        Fecha_Nacimiento,
+        Telefono,
+        Email,
+        Password,
+        ID_Rol,
+        Estado
+	FROM Usuario
+END;
+
+/** OBTENER USUARIO POR ID **/
+CREATE PROCEDURE ObtenerUsuarioPorId
+    @ID_Usuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        ID_Usuario,
+        Nombre,
+        Apellido,
+        Identificacion,
+        Fecha_Nacimiento,
+        Telefono,
+        Email,
+        Password,
+        ID_Rol,
+        Estado
+    FROM 
+        Usuario
+    WHERE 
+        ID_Usuario = @ID_Usuario;
+END;
+
+
 
 /** INICIAR SESION **/
 CREATE PROCEDURE IniciarSesion
@@ -189,4 +234,99 @@ END;
 /** UK tabla usuario campo correo **/
 ALTER TABLE Usuario
 ADD CONSTRAINT UK_Usuario UNIQUE (Email);
+
+/**------------ PRODUCTO ------------ **/
+
+/** REGISTRAR PRODUCTO **/
+CREATE PROCEDURE RegistrarProducto
+	@Nombre_Producto				VARCHAR(100),
+	@Descripcion		VARCHAR(100),
+	@Precio		        DECIMAL(10,2),
+    @ID_Categoria	    INT,
+    @Stock              INT,
+	@Talla              VARCHAR(20),
+	@Color              VARCHAR(20)
+AS
+BEGIN
+
+	DECLARE @Estado	BIT	= 1
+
+    INSERT INTO dbo.Productos(Nombre_Producto,Descripcion,Precio,ID_Categoria,Stock,Talla,Color,Estado)
+	    VALUES (@Nombre_Producto,@Descripcion,@Precio,@ID_Categoria,@Stock,@Talla,@Color,@Estado)
+
+END;
+
+/** OBTENER TODOS LOS PRODUCTOS **/
+CREATE PROCEDURE ObtenerTodosLosProductos
+AS
+BEGIN
+    SELECT 
+        ID_Producto,
+        Nombre_Producto,
+        Descripcion,
+        Precio,
+        ID_Categoria,
+        Stock,
+        Talla,
+        Color,
+        Estado
+	FROM Productos
+END;
+
+/** OBTENER PRODUCTO POR ID **/
+CREATE PROCEDURE ObtenerProductoPorId
+    @ID_Producto INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        ID_Producto,
+        Nombre_Producto,
+        Descripcion,
+        Precio,
+        ID_Categoria,
+        Stock,
+        Talla,
+        Color,
+        Estado
+    FROM 
+        Productos
+    WHERE 
+        ID_Producto = @ID_Producto;
+END;
+
+/** ACTUALIZAR PRODUCTO **/
+CREATE PROCEDURE ActualizarProducto
+    @ID_Producto        INT,
+    @Nombre_Producto    VARCHAR(100),
+    @Descripcion        VARCHAR(100),
+    @Precio             DECIMAL(10,2),
+    @ID_Categoria       INT,
+    @Stock              INT,
+    @Talla              VARCHAR(20),
+    @Color              VARCHAR(20)
+AS
+BEGIN
+    UPDATE Productos
+    SET 
+        Nombre_Producto = @Nombre_Producto,
+        Descripcion = @Descripcion,
+        Precio = @Precio,
+        ID_Categoria = @ID_Categoria,
+        Stock = @Stock,
+        Talla = @Talla,
+        Color = @Color
+    WHERE ID_Producto = @ID_Producto
+END;
+
+/** INACTIVAR PRODUCTO **/
+CREATE PROCEDURE InactivarProducto
+    @ID_Producto INT
+AS
+BEGIN
+    UPDATE Productos
+    SET Estado = 0
+    WHERE ID_Producto = @ID_Producto;
+END;
 
